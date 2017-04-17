@@ -1,0 +1,77 @@
+% https://pypi.python.org/pypi/numpy
+% http://aka.ms/vcpython27
+
+% https://github.com/jr8000/Machine-Learning-Project-ASR/
+
+% Converting frequencies:
+% Hertz = cycles/second
+% (cycles/second)*2*pi = 2*pi*(radians/second)
+% Therefore: 1Hz = 2*pi*(rad/sec)
+
+% Normalizing frequencies:
+% fs:  sampling frequency (or "sampling rate")
+% T  = sampling period (change in time between two samples)
+% fs = 1/T
+% Nyquist rate < fs/2
+% x[...] --> discrete time signal
+% x(...) --> continuous time signal
+% x[n] = x(n*T)
+%
+% normalized_frequency = frequency/sampling_frequency
+
+% Human voice range:
+% 20Hz to 20kHz
+
+% Frequency of piano keys = 440 * 2^( (key_number - 49)/12 )
+% (where key_number for middle C is 40).
+% Middle-C on piano keyboard is 261.6 Hz
+% Fundamental frequency of human voice: same as piano key only with 220 in
+% place of 440.
+
+% Here we will create a .wave file with a few frequencies and some white
+% noise. The files we make here will be used later for testing our Python
+% DFT features.
+
+% https://en.wikipedia.org/wiki/WAV
+% https://en.wikipedia.org/wiki/Pulse-code_modulation
+% The typical SAMPLING FREQUENCY for WAV FILES is 44,100 samples/second
+% (with 16 bits/sample).
+
+% ----- settings --------------- %
+
+sample_freq = 44100; % samples/second
+length_of_sound_in_seconds = 3; % seconds
+
+amplitude_of_each_sinusoid = 5;
+amplitude_of_white_noise = 1;
+% NOTE: 1046.50226 Hz is the C that is 2 octaves above middle-C
+% on the keyboard
+frequencies_to_put_in_signal = [1046.50226]; % in Hertz
+
+name_of_wav_file_to_create = 'test3.wav';
+
+% ------------------------------ %
+
+for i=1:length(frequencies_to_put_in_signal),
+    if i==1,
+        NORMALIZED_frequencies_to_put_in_signal = [frequencies_to_put_in_signal(i)/sample_freq,];
+    else,
+        NORMALIZED_frequencies_to_put_in_signal = [NORMALIZED_frequencies_to_put_in_signal, frequencies_to_put_in_signal(i)/sample_freq];
+    end
+end
+
+signal_vector = zeros(1, length(discrete_time_vector)); % start out with each place in the vector equal to zero, then start to sum the sinusoids
+
+discrete_time_vector = 0:1:(sample_freq*length_of_sound_in_seconds)-1; % total number of samples
+
+for i=1:length(NORMALIZED_frequencies_to_put_in_signal),
+    new_signal = amplitude_of_each_sinusoid * cos(2*pi*NORMALIZED_frequencies_to_put_in_signal(i) * discrete_time_vector);
+    signal_vector = signal_vector + new_signal;
+end
+
+signal_vector = signal_vector + amplitude_of_white_noise * rand(1, length(discrete_time_vector)); % add the white noise
+
+% now normalized the AMPLITUDE of the vector to less than or equal to 1:
+signal_vector = signal_vector/(length(NORMALIZED_frequencies_to_put_in_signal) * amplitude_of_each_sinusoid + 1 * amplitude_of_white_noise);
+
+audiowrite(name_of_wav_file_to_create, signal_vector, sample_freq);
